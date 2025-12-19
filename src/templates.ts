@@ -136,7 +136,8 @@ export function findMatchingTemplate(input: string, apps: App[]): WorkflowTempla
     
     // Score based on app matches
     for (const templateApp of template.apps) {
-      if (appNames.some(appName => appName.includes(templateApp.toLowerCase()) || templateApp.toLowerCase().includes(appName))) {
+      const lowerTemplateApp = templateApp.toLowerCase();
+      if (appNames.some(appName => appName.includes(lowerTemplateApp) || lowerTemplateApp.includes(appName))) {
         score += 3;
       }
     }

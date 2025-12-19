@@ -45,7 +45,7 @@ function extractTrigger(input: string): Trigger {
     if (word in TRIGGER_KEYWORDS) {
       const type = TRIGGER_KEYWORDS[word];
       // Extract description after trigger keyword
-      const descriptionStart = input.toLowerCase().indexOf(word) + word.length;
+      const descriptionStart = lowerInput.indexOf(word) + word.length;
       const description = input.substring(descriptionStart).trim();
       
       return {
