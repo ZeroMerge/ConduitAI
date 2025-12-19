@@ -2,9 +2,13 @@ import React from 'react';
 
 interface WelcomeHeaderProps {
   userName?: string;
+  timeSavedThisMonth?: number;
 }
 
-const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ userName = 'Alex' }) => {
+const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ 
+  userName = 'Alex',
+  timeSavedThisMonth = 24.5
+}) => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -34,7 +38,7 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ userName = 'Alex' }) => {
           />
         </svg>
         <p className="text-lg font-semibold">
-          You've saved 24.5 hours this month
+          You've saved {timeSavedThisMonth} hours this month
         </p>
       </div>
     </div>

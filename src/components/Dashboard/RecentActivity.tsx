@@ -58,8 +58,8 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Recent Activity</h2>
       <div className="bg-white rounded-lg shadow-md p-5">
         <div className="space-y-4">
-          {activities.map((activity, index) => (
-            <div key={activity.id} className="flex items-start space-x-3">
+          {activities.map((activity) => (
+            <div key={activity.id} className="flex items-start space-x-3 relative">
               <div className="flex-shrink-0 mt-1">{getActivityIcon(activity.type)}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900">{activity.message}</p>
@@ -67,9 +67,6 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
                   {activity.timestamp}
                 </p>
               </div>
-              {index < activities.length - 1 && (
-                <div className="absolute left-[18px] top-8 w-0.5 h-4 bg-gray-200" />
-              )}
             </div>
           ))}
         </div>
