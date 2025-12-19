@@ -1,4 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Conductor AI
+
+An AI co-pilot that allows freelancers to describe workflows in plain English and then the AI builds and runs automations by connecting their existing tools.
+
+This is a [Next.js](https://nextjs.org) project using the App Router with TypeScript.
+
+## Features
+
+- 🎨 Clean, modern UI with blue and gray color scheme
+- 📱 Fully responsive design (desktop sidebar, mobile bottom navigation)
+- 🔗 Navigation links: Dashboard, Workflow Builder, App Connections, Execution History
+- 🎯 Inter font from Google Fonts
+- ⚡ Built with Next.js 16, React 19, and Tailwind CSS 4
 
 ## Getting Started
 
@@ -18,7 +30,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses [Inter](https://fonts.google.com/specimen/Inter) from Google Fonts for a clean, modern typography.
 
 ## Learn More
 
