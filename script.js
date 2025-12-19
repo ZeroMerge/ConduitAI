@@ -53,10 +53,13 @@ function showEmptyState() {
     }
 }
 
+// Constants
+const TEXTAREA_MAX_HEIGHT = 150;
+
 // Auto-resize textarea based on content
 function autoResizeTextarea() {
     messageInput.style.height = 'auto';
-    messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, TEXTAREA_MAX_HEIGHT) + 'px';
 }
 
 // Send message
@@ -311,6 +314,19 @@ function handleScreenshot() {
     fileInput.onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            if (file.size > maxSize) {
+                alert('File size exceeds 5MB limit. Please choose a smaller file.');
+                return;
+            }
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            
             addMessage('user', `📎 Attached screenshot: ${file.name}`);
         }
     };
@@ -350,6 +366,7 @@ function startVoiceRecording() {
         
         recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
+            alert('Voice input failed. Please try again or check microphone permissions.');
             stopVoiceRecording();
         };
         
