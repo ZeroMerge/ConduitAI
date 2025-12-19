@@ -1,16 +1,61 @@
-# React + Vite
+# ConduitAI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The AI co-pilot that automates your business busywork. Describe workflows in plain English. Let AI build and run automations between your tools.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🚀 **Lightning Fast Setup** - No coding required. Describe your workflow in plain English
+- 🔒 **Secure & Reliable** - Enterprise-grade security with end-to-end encryption
+- 🔗 **Connect Everything** - Seamlessly integrate with all your favorite tools
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js 18+ 
+- npm or yarn
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Tech Stack
+
+- **React 18** - UI framework
+- **Vite** - Build tool and dev server
+- **Tailwind CSS v4** - Styling and responsive design
+- **@tailwindcss/postcss** - PostCSS plugin for Tailwind
+
+## Project Structure
+
+```
+src/
+  ├── App.jsx          # Main landing page component
+  ├── App.css          # Custom styles
+  ├── main.jsx         # Application entry point
+  └── index.css        # Global styles with Tailwind directives
+```
+
+## Development
+
+The landing page is fully responsive and includes:
+- Navigation with branding
+- Hero section with tagline and CTA
+- Three benefit cards with icons
+- Footer with waitlist link
+
+## License
+
+© 2024 Conductor AI. All rights reserved.
