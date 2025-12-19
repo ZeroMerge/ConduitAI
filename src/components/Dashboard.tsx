@@ -9,6 +9,7 @@ import type { Workflow, ConnectedApp, ActivityItem } from '../types';
 
 const Dashboard: React.FC = () => {
   // Sample data - in a real app, this would come from an API
+  // Set to true to show the dashboard, false to show the empty state
   const [hasWorkflows, setHasWorkflows] = useState(true);
   const userName = "Sarah";
   
