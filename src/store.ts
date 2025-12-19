@@ -68,11 +68,33 @@ export const useAppStore = create<AppState>()(
         // Connections state
         connectedApps: [],
         connectApp: async (appId) => {
+          const state = get();
+          
+          // Check if app is already connected
+          const isAlreadyConnected = state.connectedApps.some(
+            (app) => app.appId === appId
+          );
+          
+          if (isAlreadyConnected) {
+            return; // Don't add duplicate connections
+          }
+          
+          // Map appId to friendly app names
+          const appNameMap: Record<string, string> = {
+            gmail: 'Gmail',
+            slack: 'Slack',
+            notion: 'Notion',
+            calendar: 'Google Calendar',
+            trello: 'Trello',
+            asana: 'Asana',
+            github: 'GitHub',
+          };
+          
           // Simulate API call to connect app
           const newConnection: AppConnection = {
-            id: crypto.randomUUID(),
+            id: `${appId}-${Date.now()}`, // Fallback ID generation for compatibility
             appId,
-            appName: appId,
+            appName: appNameMap[appId] || appId.charAt(0).toUpperCase() + appId.slice(1),
             isConnected: true,
             connectedAt: new Date(),
           };
