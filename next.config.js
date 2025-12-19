@@ -1,4 +1,3 @@
-const { withSentryConfig } = require('@sentry/nextjs')
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
@@ -26,14 +25,18 @@ const nextConfig = {
   },
 }
 
-// Sentry configuration
-const sentryWebpackPluginOptions = {
-  silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
+// Only use Sentry if configured
+let config = withBundleAnalyzer(nextConfig)
+
+if (process.env.SENTRY_AUTH_TOKEN) {
+  const { withSentryConfig } = require('@sentry/nextjs')
+  const sentryWebpackPluginOptions = {
+    silent: true,
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+  }
+  config = withSentryConfig(config, sentryWebpackPluginOptions)
 }
 
-module.exports = withBundleAnalyzer(
-  withSentryConfig(nextConfig, sentryWebpackPluginOptions)
-)
+module.exports = config

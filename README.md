@@ -91,8 +91,8 @@ See `.env.example` for all required environment variables. Key variables include
 
 - `DATABASE_URL` - PostgreSQL connection string
 - `NEXTAUTH_SECRET` - Secret for session encryption
-- `NEXT_PUBLIC_SENTRY_DSN` - Sentry DSN for error tracking
-- `NEXT_PUBLIC_POSTHOG_KEY` - PostHog API key for analytics
+- `NEXT_PUBLIC_POSTHOG_KEY` - PostHog API key for analytics (optional)
+- `NEXT_PUBLIC_SENTRY_DSN` - Sentry DSN for error tracking (optional, requires @sentry/nextjs)
 
 ## 🧪 Testing
 
