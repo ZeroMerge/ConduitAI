@@ -24,11 +24,12 @@ interface Workflow {
 async function interpretNaturalLanguage(message: string): Promise<Workflow> {
   const lowerMessage = message.toLowerCase();
   const steps: WorkflowStep[] = [];
+  let stepCounter = 1;
   
   // Simple pattern matching for MVP
   if (lowerMessage.includes('slack') || lowerMessage.includes('notify')) {
     steps.push({
-      id: 'step-1',
+      id: `step-${stepCounter++}`,
       type: 'slack-notification',
       config: {
         channel: '#general',
@@ -39,7 +40,7 @@ async function interpretNaturalLanguage(message: string): Promise<Workflow> {
   
   if (lowerMessage.includes('email')) {
     steps.push({
-      id: steps.length > 0 ? `step-${steps.length + 1}` : 'step-1',
+      id: `step-${stepCounter++}`,
       type: 'email',
       config: {
         to: 'user@example.com',
@@ -50,7 +51,7 @@ async function interpretNaturalLanguage(message: string): Promise<Workflow> {
   
   if (lowerMessage.includes('delay') || lowerMessage.includes('wait')) {
     steps.push({
-      id: steps.length > 0 ? `step-${steps.length + 1}` : 'step-1',
+      id: `step-${stepCounter++}`,
       type: 'delay',
       config: {
         duration: '5m',
@@ -61,7 +62,7 @@ async function interpretNaturalLanguage(message: string): Promise<Workflow> {
   // Default workflow if no patterns matched
   if (steps.length === 0) {
     steps.push({
-      id: 'step-1',
+      id: `step-${stepCounter++}`,
       type: 'log',
       config: {
         message: 'Workflow executed',
@@ -78,7 +79,18 @@ async function interpretNaturalLanguage(message: string): Promise<Workflow> {
 
 export async function POST(request: Request) {
   try {
-    const { message, context } = await request.json();
+    // Parse and validate JSON body
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      return Response.json(
+        { success: false, error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+    
+    const { message, context } = body;
     
     // Validate input
     if (!message || typeof message !== 'string') {
