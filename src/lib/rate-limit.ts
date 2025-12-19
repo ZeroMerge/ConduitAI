@@ -1,6 +1,20 @@
 /**
  * Rate limiting using a simple in-memory store
- * For production, use Redis with @upstash/ratelimit
+ * 
+ * WARNING: This implementation is suitable for development and single-instance
+ * deployments only. For production multi-instance deployments, use a distributed
+ * solution like Redis with @upstash/ratelimit.
+ * 
+ * Example production setup:
+ * ```
+ * import { Ratelimit } from '@upstash/ratelimit'
+ * import { Redis } from '@upstash/redis'
+ * 
+ * const ratelimit = new Ratelimit({
+ *   redis: Redis.fromEnv(),
+ *   limiter: Ratelimit.slidingWindow(10, '1 m'),
+ * })
+ * ```
  */
 
 interface RateLimitResult {
@@ -12,6 +26,18 @@ interface RateLimitResult {
 
 // Simple in-memory rate limiter
 const ratelimitMap = new Map<string, { count: number; resetTime: number }>()
+
+// Cleanup old entries every 10 minutes
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now()
+    for (const [key, value] of ratelimitMap.entries()) {
+      if (now > value.resetTime) {
+        ratelimitMap.delete(key)
+      }
+    }
+  }, 600000) // 10 minutes
+}
 
 export async function rateLimit(
   identifier: string,
