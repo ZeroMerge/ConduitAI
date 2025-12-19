@@ -1,11 +1,53 @@
-# React + TypeScript + Vite
+# ConduitAI - Visual Workflow Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An AI co-pilot that allows freelancers to describe workflows in plain English and then the AI builds and runs automations by connecting their existing tools.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Visual Workflow Builder
+A powerful, intuitive drag-and-drop interface for creating automation workflows:
+
+- **Interactive Canvas**: Pan, zoom, and arrange workflow nodes
+- **Three Node Types**:
+  - 🔹 **Trigger** (Diamond) - Start workflows based on events
+  - 🔷 **Action** (Rectangle) - Perform actions with your apps
+  - 🔶 **Condition** (Hexagon) - Add logic and branching
+- **Node Configuration**: Click nodes to configure with dynamic parameters
+- **Animated Connections**: Visual flow indicators with animations
+- **Canvas Controls**: Zoom, fit to view, undo/redo, export as image
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+
+See [WORKFLOW_BUILDER.md](./WORKFLOW_BUILDER.md) for complete documentation.
+
+## Quick Start
+
+### Installation
+```bash
+npm install
+```
+
+### Development
+```bash
+npm run dev
+```
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Preview Production Build
+```bash
+npm run preview
+```
+
+## Tech Stack
+
+- **React 19** with TypeScript
+- **Vite** for blazing-fast builds
+- **React Flow** for the visual workflow canvas
+- **Zustand** for state management
+- **html-to-image** for workflow export
 
 ## React Compiler
 
