@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Conduit AI</title>
+    
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Noto+Serif+Ethiopic:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Core Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-white: #FFFFFF;
+            --soft-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --deep-gray: #343A40;
+            --accent-blue: #0D6EFD;
+            --light-blue: #E7F3FF;
+            --success-green: #198754;
+            --warning-orange: #FD7E14;
+            --error-red: #DC3545;
+            --border-light: #E9ECEF;
+        }
+
+        * {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--soft-gray);
+            color: var(--deep-gray);
+        }
+
+        /* Premium Navigation */
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--medium-gray);
+        }
+
+        .nav-link:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-link.active {
+            color: var(--accent-blue);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-blue);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--primary-white);
+            border-right: 1px solid var(--border-light);
+            min-height: 100vh;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--medium-gray);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--light-blue);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+        }
+
+        .sidebar-link svg {
+            margin-right: 0.75rem;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), #6ea8fe);
+            transform: scaleX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .metric-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-label {
+            color: var(--medium-gray);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .metric-change.positive {
+            color: var(--success-green);
+        }
+
+        .metric-change.negative {
+            color: var(--error-red);
+        }
+
+        /* App Cards */
+        .app-card {
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .app-card.connected {
+            border-color: var(--success-green);
+        }
+
+        .app-card.connected:hover {
+            border-color: var(--success-green);
+            box-shadow: 0 12px 24px rgba(25, 135, 84, 0.15);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .status-connected {
+            background: var(--success-green);
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .status-disconnected {
+            background: var(--error-red);
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        /* Workflow Cards */
+        .workflow-card {
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .workflow-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .workflow-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .workflow-status.active {
+            background: rgba(25, 135, 84, 0.1);
+            color: var(--success-green);
+        }
+
+        .workflow-status.paused {
+            background: rgba(108, 117, 125, 0.1);
+            color: var(--medium-gray);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--accent-blue);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .metric-number {
+                font-size: 2rem;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(13, 110, 253, 0.1), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full nav-blur z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="text-2xl font-bold text-blue-600">Conduit AI</div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                    <a href="workflow-builder.html" class="nav-link">Workflow Builder</a>
+                    <a href="app-connections.html" class="nav-link">App Connections</a>
+                    <a href="execution-history.html" class="nav-link">History</a>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=32&h=32&fit=crop&crop=face" alt="User" class="w-8 h-8 rounded-full">
+                            <span id="user-name">Sarah Johnson</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 fixed left-0 top-16 bottom-0 overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            </div>
+            <nav class="space-y-1">
+                <a href="dashboard.html" class="sidebar-link active">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="workflow-builder.html" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Workflow Builder
+                </a>
+                <a href="app-connections.html" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    App Connections
+                </a>
+                <a href="execution-history.html" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Execution History
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-1 ml-64 p-8">
+            <!-- Welcome Section -->
+            <div class="mb-8 animate-on-scroll">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    Welcome back, <span id="welcome-user">Sarah</span>! 👋
+                </h1>
+                <p class="text-gray-600">
+                    Here's what's happening with your workflows today.
+                </p>
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="card metric-card animate-on-scroll">
+                    <div class="metric-number" id="time-saved">5.5</div>
+                    <div class="metric-label">Hours Saved This Week</div>
+                    <div class="metric-change positive">↗ 23% from last week</div>
+                </div>
+
+                <div class="card metric-card animate-on-scroll">
+                    <div class="metric-number" id="active-workflows">4</div>
+                    <div class="metric-label">Active Workflows</div>
+                    <div class="metric-change positive">↗ 1 new this week</div>
+                </div>
+
+                <div class="card metric-card animate-on-scroll">
+                    <div class="metric-number" id="connected-apps">5</div>
+                    <div class="metric-label">Connected Apps</div>
+                    <div class="metric-change positive">All systems operational</div>
+                </div>
+
+                <div class="card metric-card animate-on-scroll">
+                    <div class="metric-number" id="successful-runs">47</div>
+                    <div class="metric-label">Successful Runs</div>
+                    <div class="metric-change positive">98.5% success rate</div>
+                </div>
+            </div>
+
+            <!-- Connected Apps Section -->
+            <div class="mb-8 animate-on-scroll">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Connected Apps</h2>
+                    <a href="app-connections.html" class="text-blue-600 hover:text-blue-700 font-medium">
+                        Manage All Apps →
+                    </a>
+                </div>
+
+                <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-4" id="connected-apps-grid">
+                    <!-- Apps will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Active Workflows Section -->
+            <div class="mb-8 animate-on-scroll">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Active Workflows</h2>
+                    <a href="workflow-builder.html" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Build New Workflow
+                    </a>
+                </div>
+
+                <div class="space-y-4" id="workflows-list">
+                    <!-- Workflows will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- Activity Chart -->
+                <div class="card animate-on-scroll">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Workflow Activity (Last 7 Days)</h3>
+                    <div id="activity-chart" style="height: 300px;"></div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="card animate-on-scroll">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Success Rate by Workflow</h3>
+                    <div id="performance-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="card animate-on-scroll">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h3>
+                <div id="activity-feed" class="space-y-4">
+                    <!-- Activity items will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize dashboard
+            initializeDashboard();
+            setupScrollAnimations();
+            createActivityChart();
+            createPerformanceChart();
+            loadRecentActivity();
+        });
+
+        function initializeDashboard() {
+            const conduitAI = window.conduitAI;
+            if (!conduitAI) return;
+
+            // Update user name
+            const userName = conduitAI.currentUser ? conduitAI.currentUser.name.split(' ')[0] : 'User';
+            document.getElementById('welcome-user').textContent = userName;
+            document.getElementById('user-name').textContent = conduitAI.currentUser ? conduitAI.currentUser.name : 'Sarah Johnson';
+
+            // Update metrics
+            document.getElementById('time-saved').textContent = conduitAI.currentUser ? conduitAI.currentUser.timeSaved : '5.5';
+            document.getElementById('active-workflows').textContent = conduitAI.workflows.filter(w => w.enabled).length;
+            document.getElementById('connected-apps').textContent = conduitAI.connections.filter(c => c.status === 'connected').length;
+            document.getElementById('successful-runs').textContent = conduitAI.executionHistory.filter(h => h.status === 'success').length;
+
+            // Render connected apps
+            renderConnectedApps(conduitAI.connections.filter(c => c.status === 'connected'));
+            
+            // Render workflows
+            renderWorkflows(conduitAI.workflows);
+        }
+
+        function renderConnectedApps(apps) {
+            const grid = document.getElementById('connected-apps-grid');
+            grid.innerHTML = apps.slice(0, 5).map(app => `
+                <div class="app-card connected" data-navigate="app-connections">
+                    <div class="status-indicator status-connected"></div>
+                    <div class="text-2xl mb-2">${app.icon}</div>
+                    <h3 class="font-semibold text-gray-900 text-sm mb-1">${app.name}</h3>
+                    <p class="text-xs text-gray-600">${app.category}</p>
+                    <div class="mt-2 text-xs text-green-600 font-medium">
+                        ✓ Connected
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderWorkflows(workflows) {
+            const list = document.getElementById('workflows-list');
+            list.innerHTML = workflows.map(workflow => `
+                <div class="workflow-card">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <h3 class="font-semibold text-gray-900 mr-4">${workflow.name}</h3>
+                                <span class="workflow-status ${workflow.enabled ? 'active' : 'paused'}">
+                                    ${workflow.enabled ? 'Active' : 'Paused'}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600 mb-2">
+                                <span class="font-medium">Trigger:</span> ${workflow.trigger.event} • 
+                                <span class="font-medium">Apps:</span> ${workflow.actions.map(a => a.app).join(', ')}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${workflow.runs} runs • Success rate: ${workflow.successRate}% • Avg: ${workflow.averageDuration}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="workflow-toggle" data-workflow-id="${workflow.id}" ${workflow.enabled ? 'checked' : ''}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="text-gray-400 hover:text-gray-600" onclick="runWorkflowSimulation('${workflow.id}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15M9 10v4a2 2 0 002 2h2a2 2 0 002-2v-4M9 10V9a2 2 0 012-2h2a2 2 0 012 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createActivityChart() {
+            const chartDom = document.getElementById('activity-chart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['Successful Runs', 'Failed Runs'],
+                    bottom: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#E9ECEF'
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#E9ECEF'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Successful Runs',
+                        type: 'line',
+                        data: [8, 12, 15, 10, 18, 6, 4],
+                        smooth: true,
+                        itemStyle: {
+                            color: '#198754'
+                        },
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0,
+                                y: 0,
+                                x2: 0,
+                                y2: 1,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(25, 135, 84, 0.3)'
+                                }, {
+                                    offset: 1, color: 'rgba(25, 135, 84, 0.05)'
+                                }]
+                            }
+                        }
+                    },
+                    {
+                        name: 'Failed Runs',
+                        type: 'line',
+                        data: [1, 0, 2, 1, 0, 1, 0],
+                        smooth: true,
+                        itemStyle: {
+                            color: '#DC3545'
+                        },
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0,
+                                y: 0,
+                                x2: 0,
+                                y2: 1,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(220, 53, 69, 0.3)'
+                                }, {
+                                    offset: 1, color: 'rgba(220, 53, 69, 0.05)'
+                                }]
+                            }
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+
+            // Responsive chart
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        function createPerformanceChart() {
+            const chartDom = document.getElementById('performance-chart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c}% ({d}%)'
+                },
+                legend: {
+                    bottom: 0,
+                    left: 'center'
+                },
+                series: [
+                    {
+                        name: 'Success Rate',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['50%', '45%'],
+                        data: [
+                            { value: 100, name: 'Client Welcome Email', itemStyle: { color: '#198754' } },
+                            { value: 96, name: 'Project Task Creation', itemStyle: { color: '#0D6EFD' } },
+                            { value: 87.5, name: 'Meeting Notes Distribution', itemStyle: { color: '#FD7E14' } },
+                            { value: 0, name: 'Lead Qualification', itemStyle: { color: '#6C757D' } }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+
+            // Responsive chart
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        function loadRecentActivity() {
+            const activities = [
+                {
+                    type: 'success',
+                    message: 'Client Welcome Email workflow executed successfully',
+                    time: '2 minutes ago',
+                    icon: '✅'
+                },
+                {
+                    type: 'info',
+                    message: 'New app connection: Gmail',
+                    time: '1 hour ago',
+                    icon: '🔗'
+                },
+                {
+                    type: 'warning',
+                    message: 'Meeting Notes Distribution workflow needs attention',
+                    time: '3 hours ago',
+                    icon: '⚠️'
+                },
+                {
+                    type: 'success',
+                    message: 'Project Task Creation workflow completed',
+                    time: '1 day ago',
+                    icon: '✅'
+                }
+            ];
+
+            const feed = document.getElementById('activity-feed');
+            feed.innerHTML = activities.map(activity => `
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl">${activity.icon}</div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">${activity.message}</p>
+                        <p class="text-xs text-gray-500">${activity.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function runWorkflowSimulation(workflowId) {
+            const conduitAI = window.conduitAI;
+            if (conduitAI && conduitAI.simulationEngine) {
+                const workflow = conduitAI.workflows.find(w => w.id == workflowId);
+                if (workflow) {
+                    conduitAI.showToast('Running workflow simulation...', 'info');
+                    conduitAI.runSimulation(workflowId);
+                }
+            }
+        }
+
+        function setupScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                observer.observe(el);
+            });
+        }
+    </script>
+</body>
+</html>

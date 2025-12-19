@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Execution History - Conduit AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .execution-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .execution-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #e5e7eb;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-failed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-running {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .filter-button {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-button:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .filter-button.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: white;
+            border-left-color: #3b82f6;
+        }
+
+        .sidebar-link svg {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #3b82f6;
+        }
+
+        .nav-link.active {
+            color: #3b82f6;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: #3b82f6;
+        }
+
+        .execution-details {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .step-status.success {
+            background: #10b981;
+        }
+
+        .step-status.failed {
+            background: #ef4444;
+        }
+
+        .step-status.running {
+            background: #3b82f6;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stats-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .date-picker {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .date-picker:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .execution-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="text-2xl font-bold gradient-text">Conduit AI</div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="dashboard.html" class="nav-link text-gray-600">Dashboard</a>
+                    <a href="workflow-builder.html" class="nav-link text-gray-600 hover:text-gray-900">Workflow Builder</a>
+                    <a href="app-connections.html" class="nav-link text-gray-600 hover:text-gray-900">App Connections</a>
+                    <a href="execution-history.html" class="nav-link active text-gray-600">History</a>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=32&h=32&fit=crop&crop=face" alt="User" class="w-8 h-8 rounded-full">
+                            <span>Sarah Johnson</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 fixed left-0 top-16 bottom-0 overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-white text-lg font-semibold mb-4">Quick Filters</h3>
+            </div>
+            <nav class="space-y-1">
+                <div class="sidebar-link active" style="cursor: pointer;" onclick="filterExecutionsFromSidebar('all')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    All Executions
+                </div>
+                <div class="sidebar-link" style="cursor: pointer;" onclick="filterExecutionsFromSidebar('success')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Successful
+                </div>
+                <div class="sidebar-link" style="cursor: pointer;" onclick="filterExecutionsFromSidebar('failed')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Failed
+                </div>
+                <div class="sidebar-link" style="cursor: pointer;" onclick="filterExecutionsFromSidebar('running')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Running
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-64 p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Execution History</h1>
+                <p class="text-gray-600">Monitor your workflow executions and troubleshoot issues.</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="stats-card">
+                    <div class="stats-number text-blue-600" id="total-executions">47</div>
+                    <div class="stats-label">Total Executions</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number text-green-600" id="successful-executions">45</div>
+                    <div class="stats-label">Successful</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number text-red-600" id="failed-executions">2</div>
+                    <div class="stats-label">Failed</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number text-purple-600" id="avg-duration">1.2s</div>
+                    <div class="stats-label">Avg Duration</div>
+                </div>
+            </div>
+
+            <!-- Filters and Date Range -->
+            <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex gap-2">
+                        <button class="filter-button active" onclick="filterExecutions('all')">All</button>
+                        <button class="filter-button" onclick="filterExecutions('success')">Success</button>
+                        <button class="filter-button" onclick="filterExecutions('failed')">Failed</button>
+                        <button class="filter-button" onclick="filterExecutions('running')">Running</button>
+                    </div>
+                    <div class="flex gap-4">
+                        <input type="date" class="date-picker" id="date-from" onchange="filterByDate()">
+                        <input type="date" class="date-picker" id="date-to" onchange="filterByDate()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executions List -->
+            <div class="space-y-4" id="executions-list">
+                <!-- Executions will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        let allExecutions = [];
+        let filteredExecutions = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for app to initialize
+            setTimeout(() => {
+                loadExecutions();
+                setDefaultDates();
+            }, 100);
+        });
+
+        function loadExecutions() {
+            const app = window.conduitAI;
+            if (!app || !app.dataStore) return;
+
+            allExecutions = app.dataStore.getExecutions();
+            filteredExecutions = [...allExecutions];
+            renderExecutions(filteredExecutions);
+            updateStats();
+        }
+
+        function renderExecutions(executions) {
+            const list = document.getElementById('executions-list');
+            
+            if (executions.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <p>No executions found matching your filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = executions.map(execution => `
+                <div class="execution-card bg-white p-6 rounded-xl shadow-sm" onclick="toggleExecutionDetails('${execution.id}')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <h3 class="font-semibold text-gray-900 mr-4">${execution.workflowName}</h3>
+                                <span class="status-badge status-${execution.status}">
+                                    ${execution.status}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600 mb-2">
+                                Started: ${formatDate(execution.startedAt)} • Duration: ${(execution.duration / 1000).toFixed(1)}s
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                Execution ID: #${execution.id.substring(5).padStart(6, '0')} • ${execution.steps ? execution.steps.length : 0} steps
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900">${execution.steps ? execution.steps.length : 0} steps</div>
+                                <div class="text-xs text-gray-500">${execution.status === 'success' ? 'All completed' : 'Some failed'}</div>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" id="arrow-${execution.id}">
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="execution-details hidden" id="details-${execution.id}">
+                        <h4 class="font-semibold text-gray-900 mb-4">Execution Steps</h4>
+                        ${execution.steps ? execution.steps.map(step => `
+                            <div class="step-item">
+                                <div class="step-status ${step.status}"></div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900">${step.stepId || step.nodeId}</div>
+                                    ${step.error ? `<div class="text-xs text-red-600 mt-1">Error: ${step.error}</div>` : ''}
+                                    ${step.output ? `<div class="text-xs text-gray-500 mt-1">Output: ${JSON.stringify(step.output).substring(0, 100)}${JSON.stringify(step.output).length > 100 ? '...' : ''}</div>` : ''}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    ${step.status === 'success' ? '✓' : step.status === 'failed' ? '✗' : '⏳'}
+                                </div>
+                            </div>
+                        `).join('') : '<div class="text-sm text-gray-500">No step details available</div>'}
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total Duration:</span>
+                                <span class="font-medium text-gray-900">${(execution.duration / 1000).toFixed(1)}s</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-600">Completed:</span>
+                                <span class="font-medium text-gray-900">${formatDate(execution.completedAt || execution.startedAt)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleExecutionDetails(executionId) {
+            const details = document.getElementById(`details-${executionId}`);
+            const arrow = document.getElementById(`arrow-${executionId}`);
+            
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+                
+                // Animate in
+                anime({
+                    targets: details,
+                    opacity: [0, 1],
+                    translateY: [-10, 0],
+                    duration: 300,
+                    easing: 'easeOutQuart'
+                });
+            } else {
+                details.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function filterExecutions(status) {
+            // Update filter buttons
+            document.querySelectorAll('.filter-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (status === 'all') {
+                filteredExecutions = [...allExecutions];
+            } else {
+                filteredExecutions = allExecutions.filter(execution => execution.status === status);
+            }
+
+            renderExecutions(filteredExecutions);
+        }
+
+        function filterExecutionsFromSidebar(status) {
+            // Update sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (status === 'all') {
+                filteredExecutions = [...allExecutions];
+            } else {
+                filteredExecutions = allExecutions.filter(execution => execution.status === status);
+            }
+
+            renderExecutions(filteredExecutions);
+        }
+
+        function filterByDate() {
+            const fromDate = document.getElementById('date-from').value;
+            const toDate = document.getElementById('date-to').value;
+
+            if (fromDate && toDate) {
+                const from = new Date(fromDate);
+                const to = new Date(toDate);
+                to.setHours(23, 59, 59, 999);
+
+                filteredExecutions = allExecutions.filter(execution => {
+                    const executionDate = new Date(execution.timestamp);
+                    return executionDate >= from && executionDate <= to;
+                });
+
+                renderExecutions(filteredExecutions);
+            }
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('date-from').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('date-to').value = today.toISOString().split('T')[0];
+        }
+
+        function updateStats() {
+            const total = allExecutions.length;
+            const successful = allExecutions.filter(e => e.status === 'success').length;
+            const failed = allExecutions.filter(e => e.status === 'failed').length;
+            const avgDuration = total > 0 ? (allExecutions.reduce((sum, e) => sum + (e.duration || 0), 0) / total) : 0;
+
+            document.getElementById('total-executions').textContent = total;
+            document.getElementById('successful-executions').textContent = successful;
+            document.getElementById('failed-executions').textContent = failed;
+            document.getElementById('avg-duration').textContent = `${(avgDuration / 1000).toFixed(1)}s`;
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)} minutes ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
+            if (diff < 604800000) return `${Math.floor(diff / 86400000)} days ago`;
+            
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+    </script>
+</body>
+</html>

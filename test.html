@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conduit AI - Test Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .success { background: #dcfce7; color: #166534; }
+        .error { background: #fee2e2; color: #dc2626; }
+    </style>
+</head>
+<body class="p-8">
+    <h1 class="text-3xl font-bold mb-8">Conduit AI - Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Data Store Test</h2>
+        <div id="data-store-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Execution History Test</h2>
+        <div id="execution-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Connections Test</h2>
+        <div id="connections-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Workflows Test</h2>
+        <div id="workflows-test"></div>
+    </div>
+
+    <script type="module">
+        import { DataStore } from './data-models.js';
+        
+        const dataStore = new DataStore();
+        
+        // Test Data Store
+        const dataStoreTest = document.getElementById('data-store-test');
+        try {
+            const executions = dataStore.getExecutions();
+            const connections = dataStore.getConnections();
+            const workflows = dataStore.getWorkflows();
+            
+            dataStoreTest.innerHTML = `
+                <div class="success p-4 rounded">
+                    <p>✓ Data Store initialized successfully</p>
+                    <p>Executions: ${executions.length}</p>
+                    <p>Connections: ${connections.length}</p>
+                    <p>Workflows: ${workflows.length}</p>
+                </div>
+            `;
+        } catch (error) {
+            dataStoreTest.innerHTML = `
+                <div class="error p-4 rounded">
+                    <p>✗ Data Store error: ${error.message}</p>
+                </div>
+            `;
+        }
+        
+        // Test Execution History
+        const executionTest = document.getElementById('execution-test');
+        try {
+            const executions = dataStore.getExecutions();
+            if (executions.length > 0) {
+                const firstExec = executions[0];
+                executionTest.innerHTML = `
+                    <div class="success p-4 rounded">
+                        <p>✓ Execution History working</p>
+                        <p>First execution: ${firstExec.workflowName}</p>
+                        <p>Status: ${firstExec.status}</p>
+                        <p>Steps: ${firstExec.steps ? firstExec.steps.length : 0}</p>
+                    </div>
+                `;
+            } else {
+                executionTest.innerHTML = `
+                    <div class="error p-4 rounded">
+                        <p>✗ No executions found</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            executionTest.innerHTML = `
+                <div class="error p-4 rounded">
+                    <p>✗ Execution test error: ${error.message}</p>
+                </div>
+            `;
+        }
+        
+        // Test Connections
+        const connectionsTest = document.getElementById('connections-test');
+        try {
+            const connections = dataStore.getConnections();
+            const connected = connections.filter(c => c.status === 'connected');
+            connectionsTest.innerHTML = `
+                <div class="success p-4 rounded">
+                    <p>✓ Connections working</p>
+                    <p>Total connections: ${connections.length}</p>
+                    <p>Connected: ${connected.length}</p>
+                    <p>Apps: ${connections.map(c => c.name).join(', ')}</p>
+                </div>
+            `;
+        } catch (error) {
+            connectionsTest.innerHTML = `
+                <div class="error p-4 rounded">
+                    <p>✗ Connections test error: ${error.message}</p>
+                </div>
+            `;
+        }
+        
+        // Test Workflows
+        const workflowsTest = document.getElementById('workflows-test');
+        try {
+            const workflows = dataStore.getWorkflows();
+            if (workflows.length > 0) {
+                const firstWorkflow = workflows[0];
+                workflowsTest.innerHTML = `
+                    <div class="success p-4 rounded">
+                        <p>✓ Workflows working</p>
+                        <p>First workflow: ${firstWorkflow.name}</p>
+                        <p>Status: ${firstWorkflow.enabled ? 'Enabled' : 'Disabled'}</p>
+                        <p>Nodes: ${firstWorkflow.nodes.length}</p>
+                    </div>
+                `;
+            } else {
+                workflowsTest.innerHTML = `
+                    <div class="error p-4 rounded">
+                        <p>✗ No workflows found</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            workflowsTest.innerHTML = `
+                <div class="error p-4 rounded">
+                    <p>✗ Workflows test error: ${error.message}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

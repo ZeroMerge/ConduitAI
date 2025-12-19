@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Builder - Conduit AI</title>
+    
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Noto+Serif+Ethiopic:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Core Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-white: #FFFFFF;
+            --soft-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --deep-gray: #343A40;
+            --accent-blue: #0D6EFD;
+            --light-blue: #E7F3FF;
+            --success-green: #198754;
+            --warning-orange: #FD7E14;
+            --error-red: #DC3545;
+            --border-light: #E9ECEF;
+        }
+
+        * {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--soft-gray);
+            color: var(--deep-gray);
+        }
+
+        /* Premium Navigation */
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--medium-gray);
+        }
+
+        .nav-link:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-link.active {
+            color: var(--accent-blue);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-blue);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--primary-white);
+            border-right: 1px solid var(--border-light);
+            min-height: 100vh;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--medium-gray);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--light-blue);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+        }
+
+        .sidebar-link svg {
+            margin-right: 0.75rem;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+            background: var(--primary-white);
+            border-right: 1px solid var(--border-light);
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--primary-white);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: var(--soft-gray);
+        }
+
+        .chat-message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-message.ai {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .chat-message.user .message-bubble {
+            background: var(--accent-blue);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.ai .message-bubble {
+            background: var(--primary-white);
+            color: var(--deep-gray);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-light);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            max-width: 80px;
+        }
+
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--medium-gray);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-light);
+            background: var(--primary-white);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .send-button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+        }
+
+        .send-button:hover {
+            background: #0b5ed7;
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            background: var(--medium-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Workflow Diagram */
+        .workflow-diagram {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: var(--soft-gray);
+        }
+
+        .diagram-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--primary-white);
+        }
+
+        .workflow-canvas {
+            min-height: 600px;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .workflow-node {
+            position: absolute;
+            background: var(--primary-white);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1rem;
+            min-width: 200px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .workflow-node:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-blue);
+            box-shadow: 0 8px 24px rgba(13, 110, 253, 0.2);
+        }
+
+        .workflow-node.trigger {
+            border-color: var(--success-green);
+            background: rgba(25, 135, 84, 0.05);
+        }
+
+        .workflow-node.action {
+            border-color: var(--accent-blue);
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        .workflow-node.process {
+            border-color: var(--warning-orange);
+            background: rgba(253, 126, 20, 0.05);
+        }
+
+        .node-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .node-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--deep-gray);
+        }
+
+        .node-description {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+            line-height: 1.4;
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), #6ea8fe);
+            z-index: 1;
+        }
+
+        .connection-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 6px solid var(--accent-blue);
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            z-index: 2;
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-light);
+            background: var(--primary-white);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .action-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-button.primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .action-button.primary:hover {
+            background: #0b5ed7;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        .action-button.secondary {
+            background: var(--soft-gray);
+            color: var(--deep-gray);
+            border: 1px solid var(--border-light);
+        }
+
+        .action-button.secondary:hover {
+            background: var(--border-light);
+        }
+
+        .action-button.success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .action-button.success:hover {
+            background: #157347;
+        }
+
+        /* Template Cards */
+        .template-card {
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-blue);
+            background: var(--light-blue);
+        }
+
+        .template-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--deep-gray);
+        }
+
+        .template-description {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+            line-height: 1.4;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            text-align: center;
+            color: var(--medium-gray);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--deep-gray);
+        }
+
+        .empty-description {
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .chat-container,
+            .workflow-diagram {
+                height: auto;
+                min-height: 400px;
+            }
+            
+            .workflow-canvas {
+                padding: 1rem;
+            }
+            
+            .workflow-node {
+                min-width: 150px;
+                padding: 0.75rem;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(13, 110, 253, 0.1), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full nav-blur z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="text-2xl font-bold text-blue-600">Conduit AI</div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="workflow-builder.html" class="nav-link active">Workflow Builder</a>
+                    <a href="app-connections.html" class="nav-link">App Connections</a>
+                    <a href="execution-history.html" class="nav-link">History</a>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=32&h=32&fit=crop&crop=face" alt="User" class="w-8 h-8 rounded-full">
+                            <span>Sarah Johnson</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 fixed left-0 top-16 bottom-0 overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Workflow Templates</h3>
+            </div>
+            <nav class="space-y-1">
+                <div class="sidebar-link active" onclick="loadTemplate('client-email')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Client Welcome Email
+                </div>
+                <div class="sidebar-link" onclick="loadTemplate('meeting-notes')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Meeting Notes to Slack
+                </div>
+                <div class="sidebar-link" onclick="loadTemplate('calendar-trello')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Calendar to Trello
+                </div>
+                <div class="sidebar-link" onclick="loadTemplate('lead-crm')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Lead to CRM
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-64 flex">
+            <!-- Chat Interface -->
+            <div class="w-1/2 flex flex-col">
+                <div class="chat-header">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">AI Workflow Builder</h2>
+                    <p class="text-gray-600">Describe your workflow in plain English, and AI will create it for you.</p>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message ai">
+                            <div class="message-bubble">
+                                <p class="mb-2">Hi! I'm your AI workflow assistant. I can help you create powerful automations by simply describing what you want to achieve.</p>
+                                <p class="text-sm text-gray-600">Try saying: "When I book a new client, send them a welcome email and notify the team on Slack"</p>
+                                <div class="message-time">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <form id="workflow-chat-form" class="chat-input-wrapper">
+                            <textarea 
+                                name="message" 
+                                placeholder="Describe your workflow..." 
+                                class="chat-input"
+                                rows="1"
+                                autocomplete="off"
+                            ></textarea>
+                            <button 
+                                type="submit" 
+                                class="send-button"
+                                id="send-button"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="action-button secondary" onclick="clearChat()">
+                        Clear Chat
+                    </button>
+                    <button class="action-button secondary" onclick="showTemplates()">
+                        Templates
+                    </button>
+                    <button class="action-button primary" onclick="saveWorkflow()">
+                        Save Workflow
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visual Workflow Diagram -->
+            <div class="w-1/2 flex flex-col">
+                <div class="diagram-header">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Workflow Diagram</h2>
+                    <p class="text-gray-600">Your workflow will appear here as you describe it.</p>
+                </div>
+
+                <div class="workflow-diagram">
+                    <div class="workflow-canvas" id="workflow-canvas">
+                        <div class="empty-state" id="empty-state">
+                            <div class="empty-icon">🤖</div>
+                            <h3 class="empty-title">Start Building Your Workflow</h3>
+                            <p class="empty-description">
+                                Describe your workflow in the chat, and I'll create a visual diagram for you. 
+                                You can also use one of the templates from the sidebar.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="action-button secondary" onclick="testWorkflow()">
+                        Test Workflow
+                    </button>
+                    <button class="action-button secondary" onclick="clearDiagram()">
+                        Clear Diagram
+                    </button>
+                    <button class="action-button success" onclick="deployWorkflow()">
+                        Deploy Workflow
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Templates Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" id="templates-modal">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Workflow Templates</h3>
+                <button onclick="hideTemplates()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-3" id="templates-list">
+                <!-- Templates will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        let currentWorkflow = null;
+        let chatHistory = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWorkflowBuilder();
+            setupChatInput();
+            setupScrollAnimations();
+        });
+
+        function initializeWorkflowBuilder() {
+            const conduitAI = window.conduitAI;
+            if (!conduitAI) return;
+
+            console.log('Workflow Builder initialized');
+        }
+
+        function setupChatInput() {
+            const textarea = document.querySelector('.chat-input');
+            const form = document.getElementById('workflow-chat-form');
+            
+            // Auto-resize textarea
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const message = textarea.value.trim();
+                if (message) {
+                    handleChatMessage(message);
+                    textarea.value = '';
+                    textarea.style.height = 'auto';
+                }
+            });
+
+            // Handle Enter key
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit'));
+                }
+            });
+        }
+
+        function handleChatMessage(message) {
+            const conduitAI = window.conduitAI;
+            if (!conduitAI) return;
+
+            // Add user message
+            addChatMessage(message, 'user');
+            
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Disable send button
+            const sendButton = document.getElementById('send-button');
+            sendButton.disabled = true;
+
+            // Process with AI after delay
+            setTimeout(() => {
+                const analysis = conduitAI.nlpProcessor.analyzeIntent(message);
+                const workflow = conduitAI.nlpProcessor.buildWorkflow(message, analysis);
+                
+                // Hide typing indicator
+                hideTypingIndicator();
+                
+                // Add AI response
+                const response = generateAIResponse(analysis, workflow);
+                addChatMessage(response, 'ai');
+                
+                // Update workflow diagram
+                updateWorkflowDiagram(workflow);
+                
+                // Enable send button
+                sendButton.disabled = false;
+                
+                // Store in chat history
+                chatHistory.push({
+                    userMessage: message,
+                    aiResponse: response,
+                    workflow: workflow,
+                    timestamp: new Date()
+                });
+                
+                currentWorkflow = workflow;
+            }, 2000);
+        }
+
+        function addChatMessage(message, sender) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <p>${message}</p>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chat-messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message ai';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function generateAIResponse(analysis, workflow) {
+            const responses = {
+                'client_welcome': [
+                    "Perfect! I'll create a comprehensive client welcome workflow that automatically sends personalized emails and notifies your team. This will help you make great first impressions.",
+                    "Excellent choice! This workflow will streamline your client onboarding process and ensure consistent communication.",
+                    "Great! I'll set up an automated system to welcome new clients and keep your team informed of new business."
+                ],
+                'meeting_notes': [
+                    "Smart thinking! I'll create a workflow that captures meeting notes and distributes them to your team automatically. This will improve collaboration.",
+                    "Perfect for keeping everyone aligned! This workflow will ensure no important details get missed after meetings.",
+                    "Excellent! I'll build a system to streamline your meeting follow-ups and action items."
+                ],
+                'lead_qualification': [
+                    "Strategic approach! This will help you qualify leads faster and improve your conversion rates significantly.",
+                    "Great for sales efficiency! I'll create a workflow that captures and qualifies leads automatically.",
+                    "Perfect! This will streamline your lead management process and help prioritize high-quality prospects."
+                ],
+                'project_management': [
+                    "Excellent! I'll create a project management workflow that automates task creation and team coordination.",
+                    "Smart choice! This will help you manage projects more efficiently with automated workflows.",
+                    "Great thinking! I'll set up a system to streamline your project management processes."
+                ]
+            };
+
+            const category = analysis.category || 'general';
+            const categoryResponses = responses[category] || responses['general'];
+            const randomResponse = categoryResponses[Math.floor(Math.random() * categoryResponses.length)];
+            
+            return randomResponse;
+        }
+
+        function updateWorkflowDiagram(workflow) {
+            const canvas = document.getElementById('workflow-canvas');
+            const emptyState = document.getElementById('empty-state');
+            
+            // Hide empty state
+            emptyState.style.display = 'none';
+            
+            // Clear existing diagram
+            canvas.innerHTML = '';
+            
+            // Create nodes
+            const steps = workflow.steps || ['Trigger Event', 'Process Data', 'Execute Action'];
+            const nodes = [];
+            
+            steps.forEach((step, index) => {
+                const node = document.createElement('div');
+                node.className = `workflow-node ${index === 0 ? 'trigger' : index === steps.length - 1 ? 'action' : 'process'}`;
+                node.style.left = `${100 + (index % 2) * 250}px`;
+                node.style.top = `${50 + Math.floor(index / 2) * 120}px`;
+                
+                const icon = getStepIcon(index);
+                const type = index === 0 ? 'Trigger' : index === steps.length - 1 ? 'Action' : 'Process';
+                
+                node.innerHTML = `
+                    <div class="node-icon">${icon}</div>
+                    <div class="node-title">${step}</div>
+                    <div class="node-description">${type} step in the workflow</div>
+                `;
+                
+                canvas.appendChild(node);
+                nodes.push(node);
+                
+                // Animate node in
+                anime({
+                    targets: node,
+                    opacity: [0, 1],
+                    scale: [0.8, 1],
+                    duration: 600,
+                    delay: index * 200,
+                    easing: 'easeOutBack'
+                });
+            });
+            
+            // Create connections
+            for (let i = 0; i < nodes.length - 1; i++) {
+                setTimeout(() => {
+                    createConnection(nodes[i], nodes[i + 1]);
+                }, (i + 1) * 200 + 600);
+            }
+        }
+
+        function createConnection(fromNode, toNode) {
+            const canvas = document.getElementById('workflow-canvas');
+            
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            const fromX = fromRect.right - canvasRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - canvasRect.top;
+            const toX = toRect.left - canvasRect.left;
+            const toY = toRect.top + toRect.height / 2 - canvasRect.top;
+            
+            // Create line
+            const line = document.createElement('div');
+            line.className = 'connection-line';
+            line.style.left = `${fromX}px`;
+            line.style.top = `${fromY}px`;
+            line.style.width = `${toX - fromX}px`;
+            
+            canvas.appendChild(line);
+            
+            // Create arrow
+            const arrow = document.createElement('div');
+            arrow.className = 'connection-arrow';
+            arrow.style.left = `${toX - 6}px`;
+            arrow.style.top = `${toY - 4}px`;
+            
+            canvas.appendChild(arrow);
+        }
+
+        function getStepIcon(index) {
+            const icons = ['⚡', '⚙️', '📤', '🔗', '📋', '📧', '💬', '📅'];
+            return icons[index] || '⚙️';
+        }
+
+        function loadTemplate(templateType) {
+            const templates = {
+                'client-email': 'When I book a new client, send them a welcome email and notify the team on Slack',
+                'meeting-notes': 'After each meeting, extract the notes and post them to the team Slack channel',
+                'calendar-trello': 'When I create a new calendar event, create a corresponding Trello card',
+                'lead-crm': 'When someone fills out our contact form, add them as a lead in HubSpot and notify sales'
+            };
+
+            const message = templates[templateType];
+            if (message) {
+                const textarea = document.querySelector('.chat-input');
+                textarea.value = message;
+                textarea.focus();
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            }
+        }
+
+        function showTemplates() {
+            const modal = document.getElementById('templates-modal');
+            const list = document.getElementById('templates-list');
+            
+            const templates = [
+                {
+                    title: 'Client Welcome Email',
+                    description: 'Automatically send welcome emails to new clients'
+                },
+                {
+                    title: 'Meeting Notes Distribution',
+                    description: 'Extract and distribute meeting notes to your team'
+                },
+                {
+                    title: 'Calendar to Trello',
+                    description: 'Create Trello cards from calendar events'
+                },
+                {
+                    title: 'Lead to CRM',
+                    description: 'Add form submissions to your CRM automatically'
+                }
+            ];
+            
+            list.innerHTML = templates.map(template => `
+                <div class="template-card" onclick="selectTemplate('${template.title}')">
+                    <div class="template-title">${template.title}</div>
+                    <div class="template-description">${template.description}</div>
+                </div>
+            `).join('');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideTemplates() {
+            const modal = document.getElementById('templates-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function selectTemplate(title) {
+            const templates = {
+                'Client Welcome Email': 'When I book a new client, send them a welcome email',
+                'Meeting Notes Distribution': 'After each meeting, extract the notes and post them to Slack',
+                'Calendar to Trello': 'When I create a new calendar event, create a corresponding Trello card',
+                'Lead to CRM': 'When someone fills out our contact form, add them as a lead in our CRM'
+            };
+            
+            const message = templates[title];
+            if (message) {
+                const textarea = document.querySelector('.chat-input');
+                textarea.value = message;
+                textarea.focus();
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+                hideTemplates();
+            }
+        }
+
+        function clearChat() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = `
+                <div class="chat-message ai">
+                    <div class="message-bubble">
+                        <p class="mb-2">Hi! I'm your AI workflow assistant. I can help you create powerful automations by simply describing what you want to achieve.</p>
+                        <p class="text-sm text-gray-600">Try saying: "When I book a new client, send them a welcome email and notify the team on Slack"</p>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            `;
+            chatHistory = [];
+            currentWorkflow = null;
+            clearDiagram();
+        }
+
+        function clearDiagram() {
+            const canvas = document.getElementById('workflow-canvas');
+            canvas.innerHTML = `
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-icon">🤖</div>
+                    <h3 class="empty-title">Start Building Your Workflow</h3>
+                    <p class="empty-description">
+                        Describe your workflow in the chat, and I'll create a visual diagram for you. 
+                        You can also use one of the templates from the sidebar.
+                    </p>
+                </div>
+            `;
+        }
+
+        function testWorkflow() {
+            if (currentWorkflow) {
+                const conduitAI = window.conduitAI;
+                if (conduitAI) {
+                    conduitAI.showToast('Running workflow test...', 'info');
+                    conduitAI.runSimulation(currentWorkflow.id || 'test');
+                }
+            } else {
+                showToast('Please create a workflow first', 'warning');
+            }
+        }
+
+        function saveWorkflow() {
+            if (currentWorkflow) {
+                const conduitAI = window.conduitAI;
+                if (conduitAI) {
+                    conduitAI.showToast('Workflow saved successfully!', 'success');
+                }
+            } else {
+                showToast('Please create a workflow first', 'warning');
+            }
+        }
+
+        function deployWorkflow() {
+            if (currentWorkflow) {
+                const conduitAI = window.conduitAI;
+                if (conduitAI) {
+                    conduitAI.showToast('Workflow deployed successfully!', 'success');
+                }
+            } else {
+                showToast('Please create a workflow first', 'warning');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'warning' ? 'bg-yellow-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            anime({
+                targets: toast,
+                translateX: [100, 0],
+                opacity: [0, 1],
+                duration: 300,
+                complete: () => {
+                    setTimeout(() => {
+                        anime({
+                            targets: toast,
+                            translateX: [0, 100],
+                            opacity: [1, 0],
+                            duration: 300,
+                            complete: () => toast.remove()
+                        });
+                    }, 3000);
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                observer.observe(el);
+            });
+        }
+    </script>
+</body>
+</html>

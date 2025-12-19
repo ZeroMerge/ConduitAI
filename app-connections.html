@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Connections - Conduit AI</title>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-white: #FFFFFF;
+            --soft-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --deep-gray: #343A40;
+            --accent-blue: #0D6EFD;
+            --light-blue: #E7F3FF;
+            --success-green: #198754;
+            --warning-orange: #FD7E14;
+            --error-red: #DC3545;
+            --border-light: #E9ECEF;
+        }
+
+        * {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--soft-gray);
+            color: var(--deep-gray);
+        }
+
+        /* Navigation */
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--medium-gray);
+        }
+
+        .nav-link:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-link.active {
+            color: var(--accent-blue);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-blue);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--primary-white);
+            border-right: 1px solid var(--border-light);
+            min-height: 100vh;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--medium-gray);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--light-blue);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+        }
+
+        .sidebar-link svg {
+            margin-right: 0.75rem;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* App Cards */
+        .app-card {
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .app-card.connected {
+            border-color: var(--success-green);
+            background: rgba(25, 135, 84, 0.02);
+        }
+
+        .app-card.connected:hover {
+            border-color: var(--success-green);
+            box-shadow: 0 12px 24px rgba(25, 135, 84, 0.15);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .status-connected {
+            background: var(--success-green);
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .status-disconnected {
+            background: var(--error-red);
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        .status-pending {
+            background: var(--warning-orange);
+            box-shadow: 0 0 0 2px rgba(253, 126, 20, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .connect-button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+            width: 100%;
+        }
+
+        .connect-button:hover {
+            background: #0b5ed7;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        .connect-button.connected {
+            background: var(--error-red);
+        }
+
+        .connect-button.connected:hover {
+            background: #dc2626;
+        }
+
+        .connect-button:disabled {
+            background: var(--medium-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Search and Filters */
+        .search-input {
+            background: var(--primary-white);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .filter-button {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--primary-white);
+            color: var(--medium-gray);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .filter-button:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .filter-button.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        /* Form Inputs */
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .modal-content {
+            background: var(--primary-white);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--medium-gray);
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--soft-gray);
+            color: var(--deep-gray);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--primary-white);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(13, 110, 253, 0.1), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .app-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full nav-blur z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="text-2xl font-bold text-blue-600">Conduit AI</div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="workflow-builder.html" class="nav-link">Workflow Builder</a>
+                    <a href="app-connections.html" class="nav-link active">App Connections</a>
+                    <a href="execution-history.html" class="nav-link">History</a>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=32&h=32&fit=crop&crop=face" alt="User" class="w-8 h-8 rounded-full">
+                            <span id="user-name">Sarah Johnson</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 fixed left-0 top-16 bottom-0 overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+            </div>
+            <nav class="space-y-1">
+                <div class="sidebar-link active" onclick="filterApps('all')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    All Apps
+                </div>
+                <div class="sidebar-link" onclick="filterApps('email')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Email
+                </div>
+                <div class="sidebar-link" onclick="filterApps('communication')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Communication
+                </div>
+                <div class="sidebar-link" onclick="filterApps('productivity')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Productivity
+                </div>
+                <div class="sidebar-link" onclick="filterApps('crm')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    CRM
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-64 p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">App Connections</h1>
+                <p class="text-gray-600">Connect your favorite apps to create powerful workflows.</p>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="app-search" 
+                            placeholder="Search apps..." 
+                            class="search-input"
+                        >
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="filter-button active" onclick="filterApps('all')">All</button>
+                        <button class="filter-button" onclick="filterApps('connected')">Connected</button>
+                        <button class="filter-button" onclick="filterApps('available')">Available</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection Status Summary -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="card text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="total-apps">0</div>
+                    <div class="text-sm text-gray-600">Total Apps</div>
+                </div>
+                <div class="card text-center">
+                    <div class="text-2xl font-bold text-green-600" id="connected-count">0</div>
+                    <div class="text-sm text-gray-600">Connected</div>
+                </div>
+                <div class="card text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="pending-count">0</div>
+                    <div class="text-sm text-gray-600">Pending</div>
+                </div>
+                <div class="card text-center">
+                    <div class="text-2xl font-bold text-red-600" id="failed-count">0</div>
+                    <div class="text-sm text-gray-600">Failed</div>
+                </div>
+            </div>
+
+            <!-- Apps Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="apps-grid">
+                <!-- Apps will be populated by JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-12 hidden" id="empty-state">
+                <div class="text-6xl mb-4">🔍</div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No apps found</h3>
+                <p class="text-gray-600">Try adjusting your search or filter criteria.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Modal -->
+    <div class="modal-overlay hidden" id="connection-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Connect App</h3>
+                <button class="modal-close" onclick="closeConnectionModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Modal content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DataStore } from './data-models.js';
+
+        let dataStore;
+        let allConnections = [];
+        let filteredConnections = [];
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            dataStore = new DataStore();
+            initializeAppConnections();
+            setupEventListeners();
+        });
+
+        function initializeAppConnections() {
+            allConnections = dataStore.getConnections();
+            filteredConnections = [...allConnections];
+            
+            updateConnectionStats();
+            renderAppConnections(filteredConnections);
+        }
+
+        function updateConnectionStats() {
+            const total = allConnections.length;
+            const connected = allConnections.filter(c => c.status === 'connected').length;
+            const pending = allConnections.filter(c => c.status === 'pending').length;
+            const failed = allConnections.filter(c => c.status === 'failed').length;
+
+            document.getElementById('total-apps').textContent = total;
+            document.getElementById('connected-count').textContent = connected;
+            document.getElementById('pending-count').textContent = pending;
+            document.getElementById('failed-count').textContent = failed;
+        }
+
+        function renderAppConnections(connections) {
+            const grid = document.getElementById('apps-grid');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (connections.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = connections.map(connection => `
+                <div class="app-card ${connection.status}" data-connection-id="${connection.id}">
+                    <div class="status-indicator status-${connection.status}"></div>
+                    <div class="text-2xl mb-2">${connection.icon}</div>
+                    <h3 class="font-semibold text-gray-900 text-sm mb-1">${connection.name}</h3>
+                    <p class="text-xs text-gray-600">${connection.type}</p>
+                    <div class="mt-2 text-xs font-medium">
+                        ${connection.status === 'connected' ? '✓ Connected' : 
+                          connection.status === 'pending' ? '⏳ Connecting...' : 
+                          'Not Connected'}
+                    </div>
+                    <button class="connect-button ${connection.status === 'connected' ? 'connected' : ''}" 
+                            onclick="handleConnection('${connection.id}')"
+                            ${connection.status === 'pending' ? 'disabled' : ''}>
+                        ${connection.status === 'connected' ? 'Disconnect' : 
+                          connection.status === 'pending' ? 'Connecting...' : 'Connect'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('app-search');
+            searchInput.addEventListener('input', (e) => {
+                searchApps(e.target.value);
+            });
+
+            // Modal close on backdrop click
+            document.getElementById('connection-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'connection-modal') {
+                    closeConnectionModal();
+                }
+            });
+        }
+
+        function filterApps(category) {
+            // Update filter buttons
+            document.querySelectorAll('.filter-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            switch (category) {
+                case 'all':
+                    filteredConnections = [...allConnections];
+                    break;
+                case 'connected':
+                    filteredConnections = allConnections.filter(c => c.status === 'connected');
+                    break;
+                case 'available':
+                    filteredConnections = allConnections.filter(c => c.status !== 'connected');
+                    break;
+                default:
+                    filteredConnections = allConnections.filter(c => c.type === category);
+            }
+
+            renderAppConnections(filteredConnections);
+        }
+
+        function searchApps(query) {
+            const filtered = filteredConnections.filter(conn => 
+                conn.name.toLowerCase().includes(query.toLowerCase()) ||
+                conn.type.toLowerCase().includes(query.toLowerCase())
+            );
+            renderAppConnections(filtered);
+        }
+
+        function handleConnection(connectionId) {
+            const connection = dataStore.getConnection(connectionId);
+            if (!connection) return;
+
+            if (connection.status === 'connected') {
+                disconnectApp(connectionId);
+            } else {
+                showConnectionModal(connection);
+            }
+        }
+
+        function showConnectionModal(connection) {
+            const modal = document.getElementById('connection-modal');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+
+            title.textContent = `Connect ${connection.name}`;
+            content.innerHTML = `
+                <form id="connection-form" onsubmit="processConnection('${connection.id}', event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Authentication Method</label>
+                        <select name="authType" class="form-input" required>
+                            <option value="">Select method</option>
+                            <option value="oauth">OAuth 2.0</option>
+                            <option value="api_key">API Key</option>
+                            <option value="username_password">Username & Password</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Credentials</label>
+                        <input type="text" name="credentials" class="form-input" placeholder="Enter your credentials" required>
+                        <p class="text-xs text-gray-500 mt-1">Your credentials are encrypted and stored securely.</p>
+                    </div>
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="authorize" class="mr-2" required>
+                            <span class="text-sm text-gray-600">I authorize Conduit AI to access my ${connection.name} account</span>
+                        </label>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                            Connect ${connection.name}
+                        </button>
+                        <button type="button" onclick="closeConnectionModal()" class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-4 text-xs text-gray-500 text-center">
+                    Your credentials are encrypted and stored securely. We never share your data with third parties.
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+        }
+
+        function closeConnectionModal() {
+            const modal = document.getElementById('connection-modal');
+            modal.classList.add('hidden');
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+        }
+
+        function processConnection(connectionId, event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const connection = dataStore.getConnection(connectionId);
+            if (!connection) return;
+
+            // Set to pending state
+            connection.status = 'pending';
+            dataStore.updateConnection(connectionId, connection);
+            renderAppConnections(filteredConnections);
+            closeConnectionModal();
+
+            // Show connecting toast
+            showToast(`Connecting to ${connection.name}...`, 'info');
+
+            // Simulate connection process
+            setTimeout(() => {
+                connection.status = 'connected';
+                connection.config = {
+                    authType: formData.get('authType'),
+                    credentials: formData.get('credentials'),
+                    lastSync: new Date().toISOString()
+                };
+                connection.health = 95 + Math.floor(Math.random() * 5); // 95-99% health
+
+                dataStore.updateConnection(connectionId, connection);
+                updateConnectionStats();
+                renderAppConnections(filteredConnections);
+                showToast(`${connection.name} connected successfully!`, 'success');
+            }, 3000);
+        }
+
+        function disconnectApp(connectionId) {
+            const connection = dataStore.getConnection(connectionId);
+            if (!connection) return;
+
+            if (confirm(`Are you sure you want to disconnect ${connection.name}? This will stop all related workflows.`)) {
+                connection.status = 'disconnected';
+                connection.config = null;
+                connection.health = 0;
+
+                dataStore.updateConnection(connectionId, connection);
+                updateConnectionStats();
+                renderAppConnections(filteredConnections);
+                showToast(`${connection.name} disconnected successfully!`, 'success');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'warning' ? 'bg-yellow-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Animate in
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: toast,
+                    translateX: [100, 0],
+                    opacity: [0, 1],
+                    duration: 300,
+                    complete: () => {
+                        setTimeout(() => {
+                            anime({
+                                targets: toast,
+                                translateX: [0, 100],
+                                opacity: [1, 0],
+                                duration: 300,
+                                complete: () => toast.remove()
+                            });
+                        }, 3000);
+                    }
+                });
+            } else {
+                setTimeout(() => toast.remove(), 3000);
+            }
+        }
+
+        // Global functions for onclick handlers
+        window.filterApps = filterApps;
+        window.handleConnection = handleConnection;
+        window.closeConnectionModal = closeConnectionModal;
+        window.processConnection = processConnection;
+    </script>
+
+    <script src="main.js" type="module"></script>
+</body>
+</html>
