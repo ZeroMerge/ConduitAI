@@ -6,8 +6,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "npm run build && node dist/store.test.js",
+    "example": "npm run build && node dist/example.js"
   },
+  "type": "module",
   "keywords": ["ai", "automation", "workflows"],
   "author": "",
   "license": "MIT",

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, devtools } from 'zustand/middleware';
-import type { User, Workflow, AppConnection, ChatMessage } from './types';
+import type { User, Workflow, AppConnection, ChatMessage } from './types.js';
 
 export interface AppState {
   // User

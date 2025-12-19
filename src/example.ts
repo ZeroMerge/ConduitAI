@@ -5,8 +5,8 @@
  * For React component examples, see STORE_USAGE.md
  */
 
-import { useAppStore } from './store';
-import type { User, Workflow, ChatMessage } from './types';
+import { useAppStore } from './store.js';
+import type { User, Workflow, ChatMessage } from './types.js';
 
 // Example 1: Setting a user
 console.log('Example 1: Setting a user');
