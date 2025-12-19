@@ -37,7 +37,7 @@ interface WorkflowStore {
   activateWorkflow: () => void;
 }
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
+const generateId = () => crypto.randomUUID();
 
 export const useWorkflowStore = create<WorkflowStore>()(
   persist(
