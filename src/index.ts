@@ -106,6 +106,9 @@ export const generateWeeklyReport = (userId: string): WeeklyReport => {
   const weekStartDate = new Date(now);
   weekStartDate.setDate(now.getDate() - 7);
   
+  const weekEndDate = new Date(weekStartDate);
+  weekEndDate.setDate(weekStartDate.getDate() + 7);
+  
   // Generate random but realistic hours saved (10-40 hours per week)
   const hoursSaved = Math.floor(Math.random() * 30) + 10;
   
@@ -141,8 +144,8 @@ export const generateWeeklyReport = (userId: string): WeeklyReport => {
   
   // AI-generated suggestions based on usage patterns
   const suggestions = [
-    `You saved the most time with ${mostUsedApps[0].appName}. Consider creating more workflows with this app.`,
-    `Your busiest day was ${busiestDays[0].date} with ${busiestDays[0].workflowsExecuted} workflows executed. Plan ahead for similar busy periods.`,
+    ...(mostUsedApps.length > 0 ? [`You saved the most time with ${mostUsedApps[0].appName}. Consider creating more workflows with this app.`] : []),
+    ...(busiestDays.length > 0 ? [`Your busiest day was ${busiestDays[0].date} with ${busiestDays[0].workflowsExecuted} workflows executed. Plan ahead for similar busy periods.`] : []),
     `You could save an additional 5-10 hours per week by automating your email responses.`,
     `Consider connecting your calendar to automatically block focus time after completing workflows.`,
     `You're most productive on ${['Monday', 'Tuesday', 'Wednesday'][Math.floor(Math.random() * 3)]}s. Schedule important workflows then.`
@@ -156,7 +159,7 @@ export const generateWeeklyReport = (userId: string): WeeklyReport => {
   return {
     userId,
     weekStartDate,
-    weekEndDate: now,
+    weekEndDate,
     hoursSaved,
     mostUsedApps,
     busiestDays,
