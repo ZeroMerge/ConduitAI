@@ -1,0 +1,201 @@
+/* Base Node Styles */
+.trigger-node,
+.action-node,
+.condition-node {
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.trigger-node:hover,
+.action-node:hover,
+.condition-node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Trigger Node - Diamond Shape Effect */
+.trigger-node {
+  border: 3px solid #22c55e;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  padding: 20px;
+  min-width: 160px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.trigger-node .node-content {
+  transform: rotate(0deg);
+}
+
+/* Action Node - Rectangle */
+.action-node {
+  border: 3px solid #3b82f6;
+}
+
+/* Condition Node - Hexagon Shape Effect */
+.condition-node {
+  border: 3px solid #eab308;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  padding: 20px;
+  min-width: 160px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Selected State */
+.trigger-node.selected,
+.action-node.selected,
+.condition-node.selected {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Node Header */
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.node-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-title {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+/* Node Content */
+.node-content {
+  text-align: center;
+}
+
+.node-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.node-app-name,
+.node-event-name,
+.node-action-name {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Condition Paths */
+.condition-paths {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.condition-path {
+  font-size: 11px;
+  color: #64748b;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+/* Status Indicators */
+.status-running {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.status-success {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.status-failure {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+/* Pulse Animation for Active Nodes */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Handle Styles */
+.trigger-handle,
+.action-handle,
+.condition-handle {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.trigger-handle {
+  color: #22c55e;
+}
+
+.action-handle {
+  color: #3b82f6;
+}
+
+.condition-handle {
+  color: #eab308;
+}
+
+.condition-handle-true {
+  border-color: #22c55e;
+}
+
+.condition-handle-false {
+  border-color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .trigger-node,
+  .action-node,
+  .condition-node {
+    min-width: 140px;
+    padding: 12px;
+  }
+  
+  .node-label {
+    font-size: 12px;
+  }
+  
+  .node-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 20px !important;
+  }
+}

@@ -1,0 +1,318 @@
+.workflow-builder {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  background: #f9fafb;
+}
+
+.workflow-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Toolbar Styles */
+.workflow-toolbar {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 250px;
+}
+
+.toolbar-section {
+  margin-bottom: 16px;
+}
+
+.toolbar-section:last-child {
+  margin-bottom: 0;
+}
+
+.toolbar-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toolbar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toolbar-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.trigger-btn {
+  background: #dcfce7;
+  color: #166534;
+  border: 2px solid #22c55e;
+}
+
+.trigger-btn:hover:not(:disabled) {
+  background: #bbf7d0;
+  transform: translateY(-1px);
+}
+
+.action-btn {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 2px solid #3b82f6;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: #bfdbfe;
+  transform: translateY(-1px);
+}
+
+.condition-btn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 2px solid #eab308;
+}
+
+.condition-btn:hover:not(:disabled) {
+  background: #fde68a;
+  transform: translateY(-1px);
+}
+
+.control-btn {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.control-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.export-btn {
+  background: #7c3aed;
+  color: white;
+  width: 100%;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: #6d28d9;
+  transform: translateY(-1px);
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 1000;
+  min-width: 150px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.context-menu button:hover {
+  background: #f1f5f9;
+}
+
+/* Custom Edge Animations */
+.react-flow__edge-path {
+  stroke-width: 2;
+  stroke: #94a3b8;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #3b82f6;
+  stroke-width: 3;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #ef4444;
+  stroke-width: 3;
+}
+
+/* Flow Direction Indicators */
+.react-flow__edge .react-flow__edge-path {
+  marker-end: url(#react-flow__arrowclosed);
+}
+
+/* Background Pattern */
+.react-flow__background {
+  background-color: #f9fafb;
+}
+
+/* MiniMap Customization */
+.react-flow__minimap {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+/* Controls Customization */
+.react-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.react-flow__controls-button {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.react-flow__controls-button:hover {
+  background: #f1f5f9;
+}
+
+/* Data Flow Animation */
+@keyframes dataFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 20;
+  }
+}
+
+.react-flow__edge.data-flowing .react-flow__edge-path {
+  stroke: #3b82f6;
+  stroke-width: 3;
+  stroke-dasharray: 10 5;
+  animation: dataFlow 0.5s linear infinite;
+}
+
+/* Success/Failure Indicators on Edges */
+.react-flow__edge.success .react-flow__edge-path {
+  stroke: #22c55e;
+  stroke-width: 3;
+}
+
+.react-flow__edge.failure .react-flow__edge-path {
+  stroke: #ef4444;
+  stroke-width: 3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .workflow-toolbar {
+    max-width: 200px;
+    padding: 12px;
+  }
+
+  .toolbar-section h3 {
+    font-size: 11px;
+  }
+
+  .toolbar-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* Hide some toolbar sections on mobile to save space */
+  .react-flow__controls {
+    display: none;
+  }
+
+  .react-flow__minimap {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .workflow-toolbar {
+    max-width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 16px 16px 0 0;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  .toolbar-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-btn {
+    flex: 1;
+    min-width: calc(50% - 3px);
+  }
+}
+
+/* Touch-Friendly */
+@media (hover: none) {
+  .toolbar-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .context-menu button {
+    padding: 14px 12px;
+  }
+}
+
+/* Loading State */
+.workflow-builder.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Empty State */
+.workflow-empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.workflow-empty-state h2 {
+  font-size: 24px;
+  margin: 0 0 8px 0;
+}
+
+.workflow-empty-state p {
+  font-size: 14px;
+  margin: 0;
+}
