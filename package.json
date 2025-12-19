@@ -1,0 +1,21 @@
+{
+  "name": "conduitai",
+  "version": "0.1.0",
+  "description": "AI co-pilot for freelancers to automate workflows",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["ai", "automation", "workflows"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "zustand": "^4.4.7"
+  }
+}
