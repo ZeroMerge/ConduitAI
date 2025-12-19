@@ -7,6 +7,14 @@ export class NLPInterpreter {
   private workflowCounter = 0;
   private stepCounter = 0;
 
+  // Constants for workflow name extraction
+  private static readonly MAX_NAME_WORDS = 5;
+  private static readonly MAX_NAME_LENGTH = 50;
+  private static readonly TRUNCATED_NAME_LENGTH = 47;
+
+  // Constants for time estimation
+  private static readonly BASE_TIME_SAVED_PER_STEP = 0.5; // hours per week
+
   /**
    * Parse natural language input and generate a workflow
    * @param naturalLanguageInput - The natural language description of the workflow
@@ -44,11 +52,11 @@ export class NLPInterpreter {
    */
   private extractWorkflowName(input: string): string {
     // Simple heuristic: take first few words or generate a name
-    const words = input.split(' ').slice(0, 5);
+    const words = input.split(' ').slice(0, NLPInterpreter.MAX_NAME_WORDS);
     let name = words.join(' ');
     
-    if (name.length > 50) {
-      name = name.substring(0, 47) + '...';
+    if (name.length > NLPInterpreter.MAX_NAME_LENGTH) {
+      name = name.substring(0, NLPInterpreter.TRUNCATED_NAME_LENGTH) + '...';
     }
     
     return name || 'Untitled Workflow';
@@ -191,9 +199,8 @@ export class NLPInterpreter {
    * Estimate time saved based on workflow complexity
    */
   private estimateTimeSaved(actionCount: number): number {
-    // Simple heuristic: each action saves ~0.5 hours per week
-    const baseTime = 0.5;
-    return Math.round((actionCount + 1) * baseTime * 10) / 10;
+    // Simple heuristic: each action saves a base amount of hours per week
+    return Math.round((actionCount + 1) * NLPInterpreter.BASE_TIME_SAVED_PER_STEP * 10) / 10;
   }
 
   /**
